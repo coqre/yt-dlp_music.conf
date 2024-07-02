@@ -174,7 +174,7 @@ Este se divide en el script de carátula y en el script de unificar los metadato
 1. En primer lugar extrae el primer fotograma del vídeo como una imagen y aquí depende el formato seteado. Por defecto se usa ffmpeg a la mejor calidad posible.
 2. Este segundo paso puede ser controversial y en muchos casos errado, ya que aquí es donde se «««evalúa»»» si es un video musical o una canción porque el criterio es constatar que el video tenga una relación de aspecto cuadrada. :v En teoría las portadas usualmente son cuadradas, aún así si detecta que no lo es se te preguntará si desea conservar la imagen o eliminarla. Esta elección es crucial porque será importante a la hora de incrustar los metadatos. Si se elimina termina el script.
 
-    Y si preguntas por qué elegí este criterio, la verdad es que probé con metadatos como el álbum, pero en algunos casos era muy errado. Este fue el que mejor funcionó. Aún así puedes modificar la función para adaptar el criterio al que creas mejor. Y si te funciona mejor avísame porfa.
+    Y si preguntas por qué elegí este criterio, la verdad es que probé con metadatos como el álbum, pero en algunos casos era muy errado. Este fue el que mejor funcionó. Aún así puedes modificar la función para adaptar el criterio al que creas mejor. Y si te funciona mejor avísame porfa. 😅
 
 3. Si no se elimina, luego viene la verificación del tamaño máximo. Si la imagen extraída lo supera, intenta comprimir con pérdidas hasta obtener el tamaño querido; si llega hasta el porcentaje mínimo de calidad y aún no llega al tamaño deseado, se pregunta al usuario si desea continuar con el script o finalizar la descarga. Esta parte es un buen momento para saber qué hacer con la imagen o buscar una por internet. El punto no es finalizar la descarga, está pensado más bien como un “espérame a ver dónde consigo una imagen que se adapte a mis necesidades”. Si se elige continuar, usa la imagen presente y elimina el vídeo.
 
@@ -220,5 +220,5 @@ No hay.
 .
 .
 .
-Ok no, puedes descargarlos aquí
-
+Ok no, aquí esta el [dm](https://files.catbox.moe/t0lmuq.sh) y aquí está el [dmp](https://files.catbox.moe/ig6sco.sh)
+Los subo en catbox.moe porque sólo quiero reservar esto para Windows. 🙃
