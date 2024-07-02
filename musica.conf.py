@@ -36,13 +36,22 @@ if formato_de_cover not in ["webp", "png"]:
     print(f'Formato de cover no válido: {formato_de_cover}. Cambiando a "webp".')
     formato_de_cover = "webp"
 
+# --------------- INICIO DE LOS CAMBIOS EN LINUX -----------------
+# A continuación, las líneas para línux estarán comentadas.
+
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
+# nueva_linea_3 = f'ruta_descarga="{ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
+# nueva_linea_6 = f'subF_playlist="{subcarpeta_playlist}"\n'
 nueva_linea_9 = f'set "ruta_config={ruta_de_configuracion}"\n'
+# nueva_linea_9 = f'ruta_config="{ruta_de_configuracion}"\n'
 nueva_linea_34 = f'    del "{nombre_de_cover}.{formato_de_cover}"\n'
-nueva_linea_35 = f'    echo {nombre_de_cover}.{formato_de_cover} eliminado."\n'
+# nueva_linea_34 = f'    re -f "{nombre_de_cover}.{formato_de_cover}"\n'
+nueva_linea_35 = f'    echo {nombre_de_cover}.{formato_de_cover} eliminado.\n'
+#nueva_linea_35 = f'    echo "{nombre_de_cover}.{formato_de_cover} eliminado."\n'
 
 nombre_bat = f'{ruta_de_configuracion}dm.bat'
+# nombre_bat = f'{ruta_de_configuracion}dm.sh'
 
 with open(nombre_bat, 'r') as archivo:
     lineas = archivo.readlines()
@@ -64,10 +73,16 @@ with open(nombre_bat, 'w') as archivo:
 print(f'El archivo {nombre_bat} ha sido actualizado.')
 
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
+# nueva_linea_3 = f'ruta_descarga="{ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
+# nueva_linea_6 = f'subF_playlist="{subcarpeta_playlist}"\n'
 nueva_linea_9 = f'set "ruta_config={ruta_de_configuracion}"\n'
+# nueva_linea_9 = f'ruta_config="{ruta_de_configuracion}"\n'
 
 nombre_pbat = f'{ruta_de_configuracion}dmp.bat'
+# nombre_pbat = f'{ruta_de_configuracion}dmp.sh'
+
+# ---------------FIN DE LOS CAMBIOS EN LINUX ------------------
 
 with open(nombre_pbat, 'r') as archivo:
     lineas = archivo.readlines()

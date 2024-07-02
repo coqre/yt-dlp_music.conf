@@ -24,6 +24,6 @@ set "URL=%*"
 echo Playlist de singles... && echo.
 mkdir "%ruta_descarga%%subF_playlist%\"
 cd /d "%ruta_descarga%%subF_playlist%\"
-musica --config-location "%ruta_config%singlelist.conf" "!URL!"
+yt-dlp --config-location "%ruta_config%singlelist.conf" "!URL!"
 endlocal
 cd /d %ruta_actual%
