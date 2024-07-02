@@ -52,6 +52,8 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
    - Descargue los archivos de este repositorio.
    - Agregue la carpeta al PATH o en la misma carpeta donde están las dependencias (desde ahora llamada «CARPETA PRINCIPAL»).
 
+   (Para aquellas personas que se les complique este tema de la instalación, puede que exista una versión completa en 'releases' y evitar esto de instalar; pero posiblemente las dependencias estén desactualizadas).
+
 ## Configuración
 El archivo de configuración global es `musica.conf.py`. Este está pensado para configurar los distintos scripts y archivos ‘.conf’ de manera automática sin necesidad de ir uno por uno.
 
