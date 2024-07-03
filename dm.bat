@@ -27,15 +27,15 @@ if !errorlevel! equ 0 (
     mkdir "%ruta_descarga%%subF_playlist%\"
     cd /d "%ruta_descarga%%subF_playlist%\"
     echo Descargando primer video para extraer caratula...
-    yt-dlp --config-location "%ruta_config%precesar.conf" "!URL!"
+    yt-dlp --config-location "%ruta_config%precesar.conf" ""!URL!""
 	if errorlevel 1 (cd /d %ruta_actual% && exit /b 1)
 	echo. && echo DESCARGANDO PLAYLIST. . . && echo.
-    yt-dlp --config-location "%ruta_config%playlist.conf" "!URL!"
+    yt-dlp --config-location "%ruta_config%playlist.conf" ""!URL!""
     del "cover.webp"
     echo cover.webp eliminado.
 ) else (
     echo NO es una playlist
-    yt-dlp --config-location "%ruta_config%single.conf" "!URL!"
+    yt-dlp --config-location "%ruta_config%single.conf" ""!URL!""
 )
 
 endlocal
