@@ -24,7 +24,7 @@ set "URL=%*"
 echo !URL! | findstr /C:"playlist?list" > nul
 if !errorlevel! equ 0 (
     echo ES una playlist
-    if "!subF_playlist!" == "default" (for /f "delims=" %%i in ('musica --no-config --print ^%%(album^)s --playlist-items 1 !URL! 2^>nul') do set "subF_playlist=%%i")
+    if "!subF_playlist!" == "default" (for /f "delims=" %%i in ('yt-dlp --no-config --print ^%%(album^)s --playlist-items 1 !URL! 2^>nul') do set "subF_playlist=%%i")
     mkdir "%cd%\!subF_playlist!" && cd "%cd%\!subF_playlist!"
     echo Descargando primer video para extraer caratula...
     yt-dlp --config-location "%ruta_config%precesar.conf" ""!URL!""
