@@ -9,7 +9,7 @@ import sys
 
 ruta_de_configuracion = "C:\\Program Files\\yt-dlp\\yt-dlp_music\\"
 ruta_de_descarga = "C:\\users\\usuario\\Downloads\\caciones\\"
-subcarpeta_playlist = "playlist"
+subcarpeta_playlist = "default"
 archivo_temporal = "audio_temp"
 nombre_de_cover = "cover"
 formato_de_cover = "webp"   # Solo adminte webp (con cwebp) y png (con pngquant). Tome como referencia los .py "procesar_" para usar otros formatos. Agréguelo a Formatos permitidos.
