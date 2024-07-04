@@ -72,7 +72,8 @@ Los argumentos de la configuración global pueden editarse según las necesidade
   - Por defecto: `C:\\users\\usuario\\Downloads\\caciones\\`
   
 - `subcarpeta_playlist`: Es el nombre de la subcarpeta de la carpeta destino de las canciones a descargar (no es la ruta completa solo el nombre. Para editar esto vaya directamente al archivo .conf).
-  - Por defecto: `playlist`
+  Si está en "default", asumirá el nombre del álbum.
+  - Por defecto: `default`
   
 - `archivo_temporal`: Nombre de cómo manejará yt-dlp a los archivos descargados. Para más versatilidad, editar los archivos .conf directamente.
   - Por defecto: `audio_temp`
