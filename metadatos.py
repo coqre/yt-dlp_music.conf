@@ -25,7 +25,7 @@ def replace_invalid_chars(filename):
     return filename
 
 def metadatos(track, artista, album, artalb, numtrack, ayo):
-    numtrack = numtrack if numtrack.isnumeric() else "01"
+    numtrack = f"{int(numtrack):02d}" if numtrack.isnumeric() else "01""
     ayo = ayo if ayo.isnumeric() else ""
     altrack = False
     
