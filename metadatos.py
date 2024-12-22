@@ -132,6 +132,11 @@ def agregar_caratula_opus(archivo_opus, archivo_imagen, title, artist, album, al
     audio['DATE'] = date
     audio['TRACKNUMBER'] = tracknumber
     audio['COMMENT'] = comment
+
+    # Eliminar metadatos no deseados
+    for unwanted_tag in ['duration', 'encoder', 'language']:
+        if unwanted_tag in audio:
+            del audio[unwanted_tag]
     
     # Guardar los cambios
     audio.save()
