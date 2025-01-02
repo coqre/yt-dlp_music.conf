@@ -2,7 +2,7 @@
 :: Define la ruta de descarga
 set "ruta_descarga=C:\users\usuario\Downloads\caciones\"
 
-:: Subcarpeta de descarga de Playlist.
+:: NOMBRE TEMPORAL de subcarpeta de descarga de Playlist.
 set "subF_playlist=default"
 
 ::La ruta a los archivos de configuración de yt-dlp.
@@ -24,18 +24,18 @@ set "URL=%*"
 echo !URL! | findstr /C:"playlist?list" > nul
 if !errorlevel! equ 0 (
     echo ES una playlist
-    if "!subF_playlist!" == "default" (for /f "delims=" %%i in ('yt-dlp --no-config --print ^%%(album^)s --playlist-items 1 !URL! 2^>nul') do set "subF_playlist=%%i")
-    mkdir "%cd%\!subF_playlist!" && cd "%cd%\!subF_playlist!"
+	if "!subF_playlist!" == "default" (for /f "delims=" %%i in ('musica --no-config --print ^%%(album^)s --playlist-items 1 !URL! 2^>nul') do set "subF_playlist=%%i")
+	mkdir "%cd%\!subF_playlist!" && cd "%cd%\!subF_playlist!"
     echo Descargando primer video para extraer caratula...
-    yt-dlp --config-location "%ruta_config%precesar.conf" ""!URL!""
+    musica --config-location "%ruta_config%precesar.conf" ""!URL!""
 	if errorlevel 1 (cd /d %ruta_actual% && exit /b 1)
 	echo. && echo DESCARGANDO PLAYLIST. . . && echo.
-    yt-dlp --config-location "%ruta_config%playlist.conf" ""!URL!""
-    del "cover.webp"
-    echo cover.webp eliminado.
+    musica --config-location "%ruta_config%playlist.conf" ""!URL!""
+    del "cover.webp" "audio_temp.info.json"
+    echo cover.webp y audio_temp.info.json eliminados.
 ) else (
     echo NO es una playlist
-    yt-dlp --config-location "%ruta_config%single.conf" ""!URL!""
+    musica --config-location "%ruta_config%single.conf" ""!URL!""
 )
 
 endlocal

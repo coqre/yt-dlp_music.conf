@@ -36,22 +36,15 @@ if formato_de_cover not in ["webp", "png"]:
     print(f'Formato de cover no válido: {formato_de_cover}. Cambiando a "webp".')
     formato_de_cover = "webp"
 
-# --------------- INICIO DE LOS CAMBIOS EN LINUX -----------------
-# A continuación, las líneas para línux estarán comentadas.
+# --------------- INICIO DE LOS CAMBIOS dm.bat -------------------
 
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
-# nueva_linea_3 = f'ruta_descarga="{ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
-# nueva_linea_6 = f'subF_playlist="{subcarpeta_playlist}"\n'
 nueva_linea_9 = f'set "ruta_config={ruta_de_configuracion}"\n'
-# nueva_linea_9 = f'ruta_config="{ruta_de_configuracion}"\n'
-nueva_linea_34 = f'    del "{nombre_de_cover}.{formato_de_cover}"\n'
-# nueva_linea_34 = f'    re -f "{nombre_de_cover}.{formato_de_cover}"\n'
-nueva_linea_35 = f'    echo {nombre_de_cover}.{formato_de_cover} eliminado.\n'
-#nueva_linea_35 = f'    echo "{nombre_de_cover}.{formato_de_cover} eliminado."\n'
+nueva_linea_34 = f'    del "{nombre_de_cover}.{formato_de_cover}" "{archivo_temporal}.info.json"\n'
+nueva_linea_35 = f'    echo {nombre_de_cover}.{formato_de_cover} y {archivo_temporal}.info.json eliminados.\n'
 
 nombre_bat = f'{ruta_de_configuracion}dm.bat'
-# nombre_bat = f'{ruta_de_configuracion}dm.sh'
 
 with open(nombre_bat, 'r') as archivo:
     lineas = archivo.readlines()
@@ -73,16 +66,12 @@ with open(nombre_bat, 'w') as archivo:
 print(f'El archivo {nombre_bat} ha sido actualizado.')
 
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
-# nueva_linea_3 = f'ruta_descarga="{ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
-# nueva_linea_6 = f'subF_playlist="{subcarpeta_playlist}"\n'
 nueva_linea_9 = f'set "ruta_config={ruta_de_configuracion}"\n'
-# nueva_linea_9 = f'ruta_config="{ruta_de_configuracion}"\n'
 
 nombre_pbat = f'{ruta_de_configuracion}dmp.bat'
-# nombre_pbat = f'{ruta_de_configuracion}dmp.sh'
 
-# ---------------FIN DE LOS CAMBIOS EN LINUX ------------------
+# ---------------FIN DE LOS CAMBIOS ------------------
 
 with open(nombre_pbat, 'r') as archivo:
     lineas = archivo.readlines()
@@ -108,10 +97,11 @@ q_cover = calidad_minina_de_cover
 contenido_conf_single = f'''# Single
 --cookies-from Opera
 -o "{temp}.%(ext)s"
+--write-info-json
 --format "(bestvideo[ext=webm]/bestvideo)+(bestaudio[acodec^=opus]/bestaudio)/best"
 --exec 'procesar_{f_cover}.py {{}} "{n_cover}.{f_cover}" "{s_cover}" "{q_cover}"'
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" "ID=%(id)s" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s"'
---exec 'del {n_cover}.{f_cover}'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'del {n_cover}.{f_cover} {temp}.info.json && echo'
 '''
 
 nombre_single = f'{ruta_de_configuracion}single.conf'
@@ -140,8 +130,10 @@ print(f'El archivo {nombre_precesar} ha sido actualizado.')
 contenido_conf_playlist = f'''# List-música
 --cookies-from Opera
 -o "{temp}.%(ext)s"
+--write-info-json
 --format "(bestaudio[acodec^=opus]/bestaudio)"
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" "ID=%(id)s" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s"'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'del {temp}.info.json && echo'
 '''
 
 nombre_playlist = f'{ruta_de_configuracion}playlist.conf'
@@ -156,8 +148,8 @@ contenido_conf_singlelist = f'''# Playlist de Singles
 -o "{temp}.%(ext)s"
 --format "(bestvideo[ext=webm]/bestvideo)+(bestaudio[acodec^=opus]/bestaudio)/best"
 --exec 'procesar_{f_cover}.py {{}} "{n_cover}.{f_cover}" "{s_cover}" "{q_cover}"'
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" "ID=%(id)s" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s"'
---exec 'del {n_cover}.{f_cover}'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'del {n_cover}.{f_cover} {temp}.info.json && echo'
 '''
 
 nombre_singlelist = f'{ruta_de_configuracion}singlelist.conf'

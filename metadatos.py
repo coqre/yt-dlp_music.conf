@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import json
 from mutagen.oggopus import OggOpus
 from mutagen.flac import Picture
 from PIL import Image
@@ -24,8 +25,28 @@ def replace_invalid_chars(filename):
         filename = filename.replace(invalid_char, replacement_char)
     return filename
 
+def leer_descripcion_json(ruta_json):
+    """Lee el archivo JSON y extrae el campo 'description'."""
+    try:
+        with open(ruta_json, "r", encoding="utf-8") as f:
+            datos = json.load(f)
+            if "description" in datos:
+                return datos["description"]
+            else:
+                print(f"\033[31mERROR:\033[0m El archivo '{ruta_json}' no contiene la clave 'description'.")
+                return False
+    except FileNotFoundError:
+        print(f"\033[31mERROR:\033[0m No se encontró el archivo '{ruta_json}'.")        
+        return False
+    except json.JSONDecodeError as e:
+        print(f"\033[31mERROR\033[0m al leer el archivo '{ruta_json}': {e}")
+        return False
+    except Exception as e:
+        print(f"\033[31mERROR\033[0m inesperado al leer el archivo '{ruta_json}': {e}")
+        return False
+
 def metadatos(track, artista, album, artalb, numtrack, ayo):
-    numtrack = f"{int(numtrack):02d}" if numtrack.isnumeric() else "01""
+    numtrack = f"{int(numtrack):02d}" if numtrack.isnumeric() else "01"
     ayo = ayo if ayo.isnumeric() else ""
     altrack = False
     
@@ -56,7 +77,6 @@ def metadatos(track, artista, album, artalb, numtrack, ayo):
             artista = f"{artista}, {tracksobra}"
         track = track[:trackverif]
     
-    
     if altrack:
         album = track
     if not album:
@@ -74,12 +94,11 @@ def encapsulate_opus_to_ogg(input_file, output_file):
     try:
         subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostats', '-i', input_file, '-map', '0:a', '-c', 'copy', output_file], check=True)
     except subprocess.CalledProcessError as e:
-        
-        print(f"Error al encapsular el archivo opus en ogg: {e}")
+        print(f"\033[31mERROR\033[0m al encapsular el archivo opus en ogg: {e}")
         return False
     return True
 
-def agregar_caratula_opus(archivo_opus, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment):
+def agregar_caratula_opus(archivo_opus, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
     # Abrir el archivo OPUS
     audio = OggOpus(archivo_opus)
     
@@ -131,9 +150,11 @@ def agregar_caratula_opus(archivo_opus, archivo_imagen, title, artist, album, al
     audio['ALBUMARTIST'] = albumartist
     audio['DATE'] = date
     audio['TRACKNUMBER'] = tracknumber
-    audio['COMMENT'] = comment
-
-    # Eliminar metadatos no deseados
+    audio['ID'] = comment
+    if description:
+        audio['DESCRIPTION'] = description # Agrega DESCRIPTION solo si no está vacío
+    
+    # Elimina metadatos no deseados
     for unwanted_tag in ['duration', 'encoder', 'language']:
         if unwanted_tag in audio:
             del audio[unwanted_tag]
@@ -154,25 +175,23 @@ def main():
     parser.add_argument('artalb', type=str, help='Artista del álbum')
     parser.add_argument('numtrack', type=str, help='Número de pista')
     parser.add_argument('ayo', type=str, help='Año')
+    parser.add_argument('description_json', type=str, help='archivo JSON para descripción')
 
     args = parser.parse_args()
 
     if not os.path.exists(args.filename):
-        
         print(f"El archivo de audio '{args.filename}' no existe.")
         return
 
     # Encapsular el archivo .opus en un contenedor .ogg
     ogg_filename = args.filename.replace('.webm', '.ogg')
     if not encapsulate_opus_to_ogg(args.filename, ogg_filename):
-        
-        print("Error al encapsular el archivo .opus en .ogg. Abortando el proceso.")
+        print("\033[31mERROR\033[0m al encapsular el archivo .opus en .ogg. Abortando el proceso.")
         return
     else:
         os.remove(args.filename)
 
     if not os.path.exists(args.cover_image):
-        
         print("NO SE ENCONTRÓ CARÁTULA. SE ASUME QUE ES UN VIDEO.")
         print("SE IGNORARÁN LOS METADATOS Y LA CARÁTULA.")
         
@@ -186,9 +205,12 @@ def main():
 
     track, artista, album, artalb, numtrack, ayo = metadatos(args.track, args.artista, args.album, args.artalb, args.numtrack, args.ayo)
 
+    # Leer la descripción del archivo JSON
+    description = leer_descripcion_json(args.description_json)
+
     try:
         print(f"Intentando insertar metadatos...")
-        agregar_caratula_opus(ogg_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id)
+        agregar_caratula_opus(ogg_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description)
         
         # Renombrar el archivo final
         new_filename = f"{track} - {artista.replace(';', ', ')}.ogg"
@@ -204,14 +226,15 @@ def main():
         print(f'    Artista de álbum:   {artalb}')
         print(f'    Número de track :   {numtrack}')
         print(f'    Año............ :   {ayo}')
-        print(f'    ID (Comentario) :   {args.id}')
+        print(f'    ID ............ :   {args.id}')
         print(f'    Carátula....... :   {args.cover_image}')
+        if description:
+            print(f'    Descripción.....:   {description.splitlines()[0]}') # Solo la primera línea
         print(f"")
         
 
     except Exception as e:
-        
-        print(f"Error: {e}")
+        print(f"\033[31mERROR:\033[0m {e}")
 
 if __name__ == '__main__':
     main()
