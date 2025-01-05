@@ -69,7 +69,8 @@ if __name__ == '__main__':
 
     # Ejecuta ffmpeg para extraer la primera imagen del archivo
     print(f"Extrayendo 1er frame como carátula...")
-    ffmpeg_command = f'ffmpeg -loglevel error -nostats -hide_banner -i "{archivo}" -vf "select=eq(n\\,0),format=rgba" -frames:v 1 -lossless 1 "{input_file}"'
+    # ffmpeg_command = f'ffmpeg -loglevel error -nostats -hide_banner -i "{archivo}" -vf "select=eq(n\\,0),format=rgba" -frames:v 1 -lossless 1 "{input_file}"'
+    ffmpeg_command = f'ffmpeg -loglevel error -nostats -hide_banner -i "{archivo}" -vf "select=eq(n\\,0),format=rgba" -frames:v 1 -lossless 0 -q:v 100 "{input_file}"'
     try:
         subprocess.run(ffmpeg_command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
