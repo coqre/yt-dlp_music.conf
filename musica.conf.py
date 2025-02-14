@@ -12,7 +12,7 @@ ruta_de_descarga = "C:\\users\\usuario\\Downloads\\caciones\\"
 subcarpeta_playlist = "default"
 archivo_temporal = "audio_temp"
 nombre_de_cover = "cover"
-formato_de_cover = "webp"   # Solo adminte webp (con cwebp) y png (con pngquant). Tome como referencia los .py "procesar_" para usar otros formatos. Agréguelo a Formatos permitidos.
+formato_de_cover = "webp"   # Solo adminte webp (con cwebp), jpg (con jpegoptim), y png (con pngquant). Tome como referencia los .py "procesar_" para usar otros formatos. Agréguelo a Formatos permitidos.
 peso_maximo_de_cover = "1300"
 calidad_minina_de_cover = "80"
 
@@ -32,7 +32,7 @@ if not is_admin():
     sys.exit()
 
 # Formatos de cover permitidos.
-if formato_de_cover not in ["webp", "png"]:
+if formato_de_cover not in ["webp", "png", "jpg"]:
     print(f'Formato de cover no válido: {formato_de_cover}. Cambiando a "webp".')
     formato_de_cover = "webp"
 
