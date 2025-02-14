@@ -22,6 +22,7 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp)**: descargas
 - **[ffmpeg](https://github.com/FFmpeg/FFmpeg)**: exportar carátula y manipulación multimedia
 - **[cwebp](https://developers.google.com/speed/webp/download?hl=es-419) (opcional)**: maneja imágenes webp
+- **[jpegoptim](https://github.com/tjko/jpegoptim) (opcional)**: maneja imágenes jpg
 - **[pngquant](https://pngquant.org/) (opcional)**: maneja imágenes png
 - **Intérprete CLI de Windows (ej: [DOSBox](https://www.dosbox.com/download.php?main=1))**: Esto es solo para Linux
 - **[python](https://www.python.org/downloads/)**: ejecución de scripts
@@ -81,7 +82,7 @@ Los argumentos de la configuración global pueden editarse según las necesidade
 - `nombre_de_cover`: Nombre de la carátula / cover temporal del single / álbum.
   - Por defecto: `cover`
   
-- `formato_de_cover`: Formato de la carátula. Webp ofrece una buena calidad por un peso considerablemente bajo que la media, pero ya que algunos reproductores no admiten dicho formato está de auxiliar el png. De momento solo se admiten estos dos formatos y de no setear ninguno de ellos se aplicará por defecto ‘webp’. Para más formatos puede usar de referencia los .py ‘procesar_*’ y agregar dicho formato a Formato permitidos en el código.
+- `formato_de_cover`: Formato de la carátula. Webp ofrece una buena calidad por un peso considerablemente bajo que la media, pero ya que algunos reproductores no admiten dicho formato está de auxiliar el png y el jpg. De momento solo se admiten estos tres formatos y de no setear ninguno de ellos se aplicará por defecto ‘webp’. Para más formatos puede usar de referencia los .py ‘procesar_*’ y agregar dicho formato a Formato permitidos en el código.
   - Por defecto: `webp`
   
 - `peso_máximo_de_cover`: Número que indica el peso (en KB) máximo que quiere que tenga la carátula.
@@ -192,6 +193,9 @@ En fin, ahora lo que hace este script:
 1. Encapsula el archivo seteado en la configuración global en un ogg. Ya que de forma predeterminada el codec es un opus, es totalmente compatible.
 2. Si la carátula no se encuentra, el script entiende que el audio proviene de un video y no de una canción como tal, por lo que simplemente pasa a renombrar el archivo. Más abajo se explica cómo se maneja.
 3. Si la carátula es encontrada, hace un proceso bien raro para obtener los datos de la imagen y hacerla compatible con el contendor. No voy a explicar eso porque realmente no es necesario saberlo.
+
+   **NOTA**: El archivo 'metadatos_mp3.py' hace exactamente lo mismo que el original pero con la diferencia de que, bueno, el archivo final es un mp3... y también soporta como archivo input un .m4a. :v
+   Puede cambiar el nombre por el original para que el output sea un mp3.
 
 #### En cuanto a los metadatos. Bien, explicaré detalladamente qué hace:
 
