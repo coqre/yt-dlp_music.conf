@@ -12,8 +12,10 @@ Para descargar en la mejor calidad posible se recomienda el uso de YouTube Premi
 - `playlist.conf`
 - `singlelist.conf`
 - `procesar_webp.py`
+- `procesar_jpg.py`
 - `porcesar_png.py`
 - `metadatos.py`
+- `metadatos_mp3.py`
 - `musica.conf.py`
 
 Se pensó el «súper script» de esta manera modular para que se pueda personalizar el código y acondicionarlo a las necesidades del usuario. (Para Linux se sustituyen los archivos ‘.bat’ por otros ‘.sh’. Leer más abajo para más información de compatibilidad).
