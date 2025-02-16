@@ -190,7 +190,7 @@ Si me permito la distensión, probé con contenedores matroska y mpeg, pero se m
 
 En fin, ahora lo que hace este script:
 
-1. Encapsula el archivo seteado en la configuración global en un ogg. Ya que de forma predeterminada el codec es un opus, es totalmente compatible.
+1. Encapsula el archivo seteado en la configuración global en un ogg o m4a (y para encapsulados en mkv). Ya que de forma predeterminada el codec es un opus, es totalmente compatible.
 2. Si la carátula no se encuentra, el script entiende que el audio proviene de un video y no de una canción como tal, por lo que simplemente pasa a renombrar el archivo. Más abajo se explica cómo se maneja.
 3. Si la carátula es encontrada, hace un proceso bien raro para obtener los datos de la imagen y hacerla compatible con el contendor. No voy a explicar eso porque realmente no es necesario saberlo.
 
@@ -208,7 +208,7 @@ En fin, ahora lo que hace este script:
 - Como no hay artista del álbum, setea el artista como artista del álbum y si hay más de uno, setea al artista del álbum como el primer artista ya que suele ser así.
 - Si se te ocurre cómo mejorar esto o automatizar otros metadatos, eres bienvenido/a. :D
 
-Luego intenta escribir los metadatos (con carátula incluida) en el archivo ogg y pone el ID del enlace de YouTube como metadato de comentario.
+Luego intenta escribir los metadatos (con carátula incluida) en el archivo ogg y también para m4a encapsulado en mkv, y pone el ID del enlace de YouTube como metadato de comentario.
 
 El renombrado de archivo se hace similar a cómo yt-dlp nombra a sus archivos para que sea compatible con los caracteres especiales que Windows no permite. Antes de renombrar el archivo ogg, setea el nombre del archivo como “título - artista(s)” donde “artista(s)” si hay más de uno, reemplaza el separador por “, ”. Luego verifica si hay caracteres no compatibles, si los hay los reemplaza por su versión ancha. En total, que los hace compatibles tal como lo hace yt-dlp así que el nombre permanece «original».
 
