@@ -89,7 +89,7 @@ if __name__ == '__main__':
             if user_choice == 's':
                 os.remove(input_file)
                 print(f'"{input_file}" ha sido eliminado.')
-                sys.exit(1)
+                sys.exit(0)
             elif user_choice == 'n':
                 print(f'El archivo "{input_file}" no ha sido eliminado.')
                 sys.exit(0)
