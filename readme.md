@@ -33,6 +33,7 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
 - `os`, `subprocess`, `sys`, `ctypes`, `argparse`, `base64`: Bibliotecas estándar
 - `PIL (Pillow)`: procesamiento de imágenes
 - `mutagen`: manipular metadatos de archivos de audio
+- `pymediainfo`: detectar códec de audio
 
 ## Instalación
 1. Instalar [Python](https://www.python.org/downloads/).
@@ -43,6 +44,7 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
      ```
      pip install Pillow
      pip install mutagen
+     pip install pymediainfo
      ```
 
 3. Instalar [yt-dlp](https://github.com/yt-dlp/yt-dlp), [ffmpeg](https://github.com/FFmpeg/FFmpeg), y [cwebp](https://developers.google.com/speed/webp/download?hl=es-419) / [pngquant](https://pngquant.org/) (dependencias).
@@ -186,13 +188,13 @@ Este se divide en el script de carátula y en el script de unificar los metadato
 
 ### metadatos
 
-Este sin duda es el script más complejo de todos, ya que es el encargado de hacer toda la lógica y las correcciones de metadatos y elegir qué mismo hacer con todos los archivos actuales.
+Este sin duda es el script más complejo de todos, ya que es el encargado de hacer toda la lógica y las correcciones de metadatos y elegir qué hacer con todos los archivos actuales.
 
 Si me permito la distensión, probé con contenedores matroska y mpeg, pero se me hacía complicado unificar los metadatos en mp3tag y Poweramp (el reproductor que uso). Algunas veces los leía, otras no, otras en el campo erróneo, otras veces unía dos campos en uno y donde en PowerAmp se mostraba bien en mp3tag no y a veces era al revés. De verdad, mucho lío. Opus fue el que mejor me resultó A MÍ, pero no lo quería dejar así suelto por lo que elegí el contenedor ogg. Siéntete libre de bifurcarlo y escoger otros contenedores. ^-^
 
 En fin, ahora lo que hace este script:
 
-1. Encapsula el archivo seteado en la configuración global en un ogg o m4a (y para encapsulados en mkv). Ya que de forma predeterminada el codec es un opus, es totalmente compatible.
+1. Encapsula el archivo seteado en la configuración global en un ogg o m4a. Ya que de forma predeterminada el codec es un opus, es totalmente compatible.
 2. Si la carátula no se encuentra, el script entiende que el audio proviene de un video y no de una canción como tal, por lo que simplemente pasa a renombrar el archivo. Más abajo se explica cómo se maneja.
 3. Si la carátula es encontrada, hace un proceso bien raro para obtener los datos de la imagen y hacerla compatible con el contendor. No voy a explicar eso porque realmente no es necesario saberlo.
 
@@ -210,7 +212,7 @@ En fin, ahora lo que hace este script:
 - Como no hay artista del álbum, setea el artista como artista del álbum y si hay más de uno, setea al artista del álbum como el primer artista ya que suele ser así.
 - Si se te ocurre cómo mejorar esto o automatizar otros metadatos, eres bienvenido/a. :D
 
-Luego intenta escribir los metadatos (con carátula incluida) en el archivo ogg y también para m4a encapsulado en mkv, y pone el ID del enlace de YouTube como metadato de comentario.
+Luego intenta escribir los metadatos (con carátula incluida) en el archivo ogg y también para m4a, y pone el ID del enlace de YouTube como comentario o ID según corresponda.
 
 El renombrado de archivo se hace similar a cómo yt-dlp nombra a sus archivos para que sea compatible con los caracteres especiales que Windows no permite. Antes de renombrar el archivo ogg, setea el nombre del archivo como “título - artista(s)” donde “artista(s)” si hay más de uno, reemplaza el separador por “, ”. Luego verifica si hay caracteres no compatibles, si los hay los reemplaza por su versión ancha. En total, que los hace compatibles tal como lo hace yt-dlp así que el nombre permanece «original».
 
