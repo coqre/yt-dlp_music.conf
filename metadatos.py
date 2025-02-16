@@ -2,6 +2,7 @@ import argparse
 import os
 import subprocess
 import json
+from pymediainfo import MediaInfo
 from mutagen.oggopus import OggOpus
 from mutagen.flac import Picture
 from mutagen.mp4 import MP4, MP4Cover
@@ -107,6 +108,14 @@ def extract_to_m4a(input_file, output_file):
         print(f"\033[31mERROR\033[0m al extraer el archivo mkv en m4a: {e}")
         return False
     return True
+    
+def extract_to_contenedor(input_file, output_file):
+    try:
+        subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostats', '-i', input_file, '-map', '0:a', '-c', 'copy', output_file], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"\033[31mERROR\033[0m al extraer y encapsular el archivo {input_file} en {output_file}: {e}")
+        return False
+    return True
 
 def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
     # Abrir el archivo OPUS
@@ -174,8 +183,6 @@ def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, al
     
     print(f"Carátula y metadatos agregados a {archivo_opus}")
 
-# EDITAR Y MEJORAR ESTA FUNCIÓN
-
 def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
     # Cargar el archivo de audio
     audio = MP4(archivo_m4a)
@@ -194,7 +201,7 @@ def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, alb
         image_format = MP4Cover.FORMAT_PNG
     elif formato == "WEBP": #Puede fallar
         image_format = MP4Cover.FORMAT_PNG
-        print(f"La carátula se insertará como un PNG (puede fallar)")
+        print(f"\033[94mLa carátula se insertará como un PNG (puede fallar).\033[0m")
     else:
         raise ValueError("Formato de imagen no soportado. Usa jpg, webp, o png.")
     
@@ -218,7 +225,12 @@ def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, alb
     audio.save()
     print(f"Carátula y metadatos agregados a {archivo_m4a}")
 
-
+def get_audio_codec(video_path):
+    media_info = MediaInfo.parse(video_path)
+    for track in media_info.tracks:
+        if track.track_type == "Audio":
+            return track.format
+    return None
 
 def main():
     activar_m4a = False
@@ -237,50 +249,44 @@ def main():
     args = parser.parse_args()
 
     if not os.path.exists(args.filename):
-        print(f"El archivo de audio '{args.filename}' no existe.")
+        print(f"El archivo '{args.filename}' no existe.")
         return
 
     #verificar la extensión del archivo
     input_filename = args.filename
     extension = input_filename.split('.')[-1].lower()  # Obtener la extensión del archivo
     
-    if extension == "webm":
-        # Encapsular el archivo .opus en un contenedor .ogg
-        cancion_filename = args.filename.replace('.webm', '.ogg')
-        if not encapsulate_opus_to_ogg(args.filename, cancion_filename):
-            print("\033[31mERROR\033[0m al encapsular el archivo .opus en .ogg. Abortando el proceso.")
-            return
-        else:
-            os.remove(args.filename)
-    elif extension == "m4a":
-        print(f"----EL ARCHIVO ES UN M4A----")
-        cancion_filename = args.filename
+    codec = get_audio_codec(args.filename)
+    print(f"\033[94mcódec: {codec}\033[0m")
+    codec = codec.lower()
+    if codec == "opus":
+        contenedor_codec = ".ogg"
+    elif codec == "aac":
+        contenedor_codec = ".m4a"
         activar_m4a = True
-    elif extension == "mkv":
-        print(f"----EL ARCHIVO ES UN MKV----")
-        activar_m4a = True
-        # Extraer el archivo .mkv en un contenedor .m4a
-        cancion_filename = args.filename.replace('.mkv', '.m4a')
-        if not extract_to_m4a(args.filename, cancion_filename):
-            print("\033[31mERROR\033[0m al extraer el archivo .mkv en .m4a. Abortando el proceso.")
+    else:
+        print(f"Códec de audio {codec.lower()} no compatible. Finalizando script.")
+        return
+    
+    # Extraer y encapsular el archivo de audio en el contenedor respectivo.
+    cancion_filename = args.filename.replace(f".{extension}", contenedor_codec)
+    
+    if not args.filename == cancion_filename:
+        if not extract_to_contenedor(args.filename, cancion_filename):
+            print(f"\033[31mERROR\033[0m al extraer y encapsular el archivo .{extension} en {contenedor_codec}.")
+            print("--ABORTANDO EL PROCESO--")
             return
         else:
             os.remove(args.filename)
     else:
-        print(f"Extensión .{extension} no reconocida o no soportada.")
-        return False
-
+        print(f"El archivo {cancion_filename} ya existe. Extracción y encapsulado ignorado.")
 
     if not os.path.exists(args.cover_image):
         print("NO SE ENCONTRÓ CARÁTULA. SE ASUME QUE ES UN VIDEO.")
         print("SE IGNORARÁN LOS METADATOS Y LA CARÁTULA.")
+        
         # Renombrar el archivo final
-        if activar_m4a == True:
-            extension_final = "m4a"
-        else:
-            extension_final = "ogg"
-
-        new_filename = f"{args.track} - {args.artista.replace(';', ', ')}.{extension_final}"
+        new_filename = f"{args.track} - {args.artista.replace(';', ', ')}{contenedor_codec}"
         new_filename = replace_invalid_chars(new_filename)
         os.rename(cancion_filename, new_filename)
         print(f"")
@@ -305,12 +311,7 @@ def main():
             agregar_metadatos_ogg(cancion_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description)
 
         # Renombrar el archivo final
-        if activar_m4a == True:
-            extension_final = "m4a"
-        else:
-            extension_final = "ogg"
-        
-        new_filename = f"{track} - {artista.replace(';', ', ')}.{extension_final}"
+        new_filename = f"{track} - {artista.replace(';', ', ')}{contenedor_codec}"
         new_filename = replace_invalid_chars(new_filename)
         os.rename(cancion_filename, new_filename)
         
