@@ -9,6 +9,56 @@ from mutagen.mp4 import MP4, MP4Cover
 from mutagen.id3 import ID3
 from PIL import Image
 import base64
+import sys
+import requests
+
+
+# --- lrclib functionality integrated ---
+def segundos_a_minutos(segundos):
+    segundos = int(round(segundos))
+    minutos = segundos // 60
+    segundos_restantes = segundos % 60
+    return f"{minutos}:{segundos_restantes:02d}"
+
+
+def fetch_synced_lyrics(track_name, target_duration=None):
+    query = track_name.replace(' ', '+')
+    url = f"https://lrclib.net/api/search?q={query}"
+    try:
+        resp = requests.get(url, headers={'User-Agent': 'yt-dlp_music.conf v0.4 (https://github.com/coqre/yt-dlp_music.conf/releases)'})
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error buscando letras: {e}")
+        return ""
+    results = resp.json()
+    if not results:
+        print("No se encontraron letras sincronizadas.")
+        return ""
+    if target_duration:
+        print(f"\nResultados de letras sincronizadas para: {track_name} [{target_duration}]")
+    else:
+        print(f"\nResultados de letras sincronizadas para: {track_name} [duración no encontrada]")
+    # input
+    for i, s in enumerate(results, start=1):
+        t = s.get('trackName','Desconocido')
+        a = s.get('artistName','Desconocido')
+        d = segundos_a_minutos(s.get('duration',0))
+        print(f"{i}. {t} - {a} [{d}]")
+    # Selección interactiva
+    while True:
+        try:
+            sel = int(input("Elige número de la canción para letra: "))
+            if 1 <= sel <= len(results): break
+        except ValueError:
+            pass
+        print("Selección inválida.")
+    chosen = results[sel-1]
+    lyrics = chosen.get('syncedLyrics','')
+    if not lyrics.strip():
+        print("La selección no tiene letras sincronizadas.")
+        return ""
+    return lyrics
+
 
 # Mapa de caracteres no permitidos y sus reemplazos de ancho completo
 replacement_map = {
@@ -37,6 +87,26 @@ def leer_descripcion_json(ruta_json):
                 return datos["description"]
             else:
                 print(f"\033[31mERROR:\033[0m El archivo '{ruta_json}' no contiene la clave 'description'.")
+                return False
+    except FileNotFoundError:
+        print(f"\033[31mERROR:\033[0m No se encontró el archivo '{ruta_json}'.")        
+        return False
+    except json.JSONDecodeError as e:
+        print(f"\033[31mERROR\033[0m al leer el archivo '{ruta_json}': {e}")
+        return False
+    except Exception as e:
+        print(f"\033[31mERROR\033[0m inesperado al leer el archivo '{ruta_json}': {e}")
+        return False
+        
+def leer_duration_string(ruta_json):
+    """Lee el archivo JSON y extrae el campo 'duration_string'."""
+    try:
+        with open(ruta_json, "r", encoding="utf-8") as f:
+            datos = json.load(f)
+            if "duration_string" in datos:
+                return datos["duration_string"]
+            else:
+                print(f"\033[31mERROR:\033[0m El archivo '{ruta_json}' no contiene la clave 'duration_string'.")
                 return False
     except FileNotFoundError:
         print(f"\033[31mERROR:\033[0m No se encontró el archivo '{ruta_json}'.")        
@@ -117,7 +187,7 @@ def extract_to_contenedor(input_file, output_file):
         return False
     return True
 
-def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
+def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description, lyrics=""):
     # Abrir el archivo OPUS
     audio = OggOpus(archivo_opus)
     
@@ -172,7 +242,9 @@ def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, al
     audio['ID'] = comment
     if description:
         audio['DESCRIPTION'] = description # Agrega DESCRIPTION solo si no está vacío
-    
+    if lyrics:
+        audio['LYRICS'] = lyrics
+
     # Elimina metadatos no deseados
     for unwanted_tag in ['duration', 'encoder', 'language']:
         if unwanted_tag in audio:
@@ -183,7 +255,7 @@ def agregar_metadatos_ogg(archivo_opus, archivo_imagen, title, artist, album, al
     
     print(f"Carátula y metadatos agregados a {archivo_opus}")
 
-def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
+def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description, lyrics=""):
     # Cargar el archivo de audio
     audio = MP4(archivo_m4a)
     
@@ -220,6 +292,8 @@ def agregar_metadatos_m4a(archivo_m4a, archivo_imagen, title, artist, album, alb
     if comment:
         audio["\xa9cmt"] = comment       # COMMENT. Lo agrega solo si existe
     
+    if lyrics:
+        audio['©lyr'] = lyrics
 
     # Guardar los cambios
     audio.save()
@@ -245,7 +319,7 @@ def main():
     parser.add_argument('numtrack', type=str, help='Número de pista')
     parser.add_argument('ayo', type=str, help='Año')
     parser.add_argument('description_json', type=str, help='archivo JSON para descripción')
-
+    parser.add_argument('--lyrics', action='store_true', help='Buscar e incluir letras sincronizadas')
     args = parser.parse_args()
 
     if not os.path.exists(args.filename):
@@ -300,15 +374,22 @@ def main():
     track, artista, album, artalb, numtrack, ayo = metadatos(args.track, args.artista, args.album, args.artalb, args.numtrack, args.ayo)
 
     # Leer la descripción del archivo JSON
+    
+    duration_string = leer_duration_string(args.description_json)
+    lyrics = ''
+    if args.lyrics:
+        un_artista = artista.split(";", 1)[0]
+        buscar_por = f"{track} {un_artista}"
+        lyrics = fetch_synced_lyrics(buscar_por, duration_string)
     description = leer_descripcion_json(args.description_json)
 
     try:
         print(f"Intentando insertar metadatos...")
         
         if activar_m4a == True:
-            agregar_metadatos_m4a(cancion_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description)
+            agregar_metadatos_m4a(cancion_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description, lyrics)
         else:
-            agregar_metadatos_ogg(cancion_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description)
+            agregar_metadatos_ogg(cancion_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description, lyrics)
 
         # Renombrar el archivo final
         new_filename = f"{track} - {artista.replace(';', ', ')}{contenedor_codec}"
@@ -331,6 +412,8 @@ def main():
         print(f'    Carátula....... :   {args.cover_image}')
         if description:
             print(f'    Descripción.....:   {description.splitlines()[0]}') # Solo la primera línea
+        if lyrics:
+            print(f'    Líricas.........:   {lyrics.splitlines()[0]}') # Solo la primera línea
         print(f"")
         
 
