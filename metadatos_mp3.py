@@ -8,8 +8,57 @@ from mutagen.oggopus import OggOpus
 from mutagen.flac import Picture
 from PIL import Image
 from mutagen.id3 import ID3, TIT2, TPE1, TALB, TPE2, TDRC, TRCK, COMM, APIC, TXXX
+from mutagen.id3 import USLT
 from mutagen.mp3 import MP3
+import sys
+import requests
 
+
+# --- lrclib functionality integrated ---
+def segundos_a_minutos(segundos):
+    segundos = int(round(segundos))
+    minutos = segundos // 60
+    segundos_restantes = segundos % 60
+    return f"{minutos}:{segundos_restantes:02d}"
+
+def fetch_synced_lyrics(track_name, target_duration=None):
+    query = track_name.replace(' ', '+')
+    url = f"https://lrclib.net/api/search?q={query}"
+    try:
+        resp = requests.get(url, headers={'User-Agent': 'yt-dlp_music.conf v0.4 (https://github.com/coqre/yt-dlp_music.conf/releases)'})
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error buscando letras: {e}")
+        return ""
+    results = resp.json()
+    if not results:
+        print("No se encontraron letras sincronizadas.")
+        return ""
+    if target_duration:
+        print(f"\nResultados de letras sincronizadas para: {track_name} [{target_duration}]")
+    else:
+        print(f"\nResultados de letras sincronizadas para: {track_name} [duración no encontrada]")
+    # input
+    for i, s in enumerate(results, start=1):
+        t = s.get('trackName','Desconocido')
+        a = s.get('artistName','Desconocido')
+        d = segundos_a_minutos(s.get('duration',0))
+        print(f"{i}. {t} - {a} [{d}]")
+    # Selección interactiva
+    while True:
+        try:
+            sel = int(input("Elige número de la canción para letra: "))
+            if 1 <= sel <= len(results): break
+        except ValueError:
+            pass
+        print("Selección inválida.")
+    chosen = results[sel-1]
+    lyrics = chosen.get('syncedLyrics','')
+    if not lyrics.strip():
+        print("La selección no tiene letras sincronizadas.")
+        return ""
+    return lyrics
+    
 replacement_map = {
     '\\': '⧹',
     '/': '⧸',
@@ -21,7 +70,7 @@ replacement_map = {
     '>': '＞',
     '|': '｜'
 }
-
+    
 def replace_invalid_chars(filename):
     for invalid_char, replacement_char in replacement_map.items():
         filename = filename.replace(invalid_char, replacement_char)
@@ -36,6 +85,26 @@ def leer_descripcion_json(ruta_json):
                 return datos["description"]
             else:
                 print(f"\033[31mERROR:\033[0m El archivo '{ruta_json}' no contiene la clave 'description'.")
+                return False
+    except FileNotFoundError:
+        print(f"\033[31mERROR:\033[0m No se encontró el archivo '{ruta_json}'.")        
+        return False
+    except json.JSONDecodeError as e:
+        print(f"\033[31mERROR\033[0m al leer el archivo '{ruta_json}': {e}")
+        return False
+    except Exception as e:
+        print(f"\033[31mERROR\033[0m inesperado al leer el archivo '{ruta_json}': {e}")
+        return False
+
+def leer_duration_string(ruta_json):
+    """Lee el archivo JSON y extrae el campo 'duration_string'."""
+    try:
+        with open(ruta_json, "r", encoding="utf-8") as f:
+            datos = json.load(f)
+            if "duration_string" in datos:
+                return datos["duration_string"]
+            else:
+                print(f"\033[31mERROR:\033[0m El archivo '{ruta_json}' no contiene la clave 'duration_string'.")
                 return False
     except FileNotFoundError:
         print(f"\033[31mERROR:\033[0m No se encontró el archivo '{ruta_json}'.")        
@@ -100,7 +169,7 @@ def convert_to_mp3(input_file, output_file):
         return False
     return True
 
-def agregar_metadatos_mp3(archivo_mp3, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description):
+def agregar_metadatos_mp3(archivo_mp3, archivo_imagen, title, artist, album, albumartist, date, tracknumber, comment, description, lyrics=""):
     # Abrir el archivo mp3
     audio = MP3(archivo_mp3, ID3=ID3)
     
@@ -118,6 +187,8 @@ def agregar_metadatos_mp3(archivo_mp3, archivo_imagen, title, artist, album, alb
     audio.tags['COMM'] = COMM(encoding=3, lang='eng', desc='', text=f"ID={comment}")  # Comentario
     if description:
         audio.tags['TXXX:Description'] = TXXX(encoding=3, desc='Description', text=description) # Descripción adicional
+    if lyrics:
+        audio.tags['USLT'] = USLT(encoding=3, desc='Lyrics', text=lyrics)
     
     # Abrir la imagen y detectar su formato
     with open(archivo_imagen, "rb") as img_f:
@@ -165,6 +236,7 @@ def main():
     parser.add_argument('numtrack', type=str, help='Número de pista')
     parser.add_argument('ayo', type=str, help='Año')
     parser.add_argument('description_json', type=str, help='archivo JSON para descripción')
+    parser.add_argument('--lyrics', action='store_true', help='Buscar e incluir letras sincronizadas')
 
     args = parser.parse_args()
 
@@ -204,11 +276,17 @@ def main():
     track, artista, album, artalb, numtrack, ayo = metadatos(args.track, args.artista, args.album, args.artalb, args.numtrack, args.ayo)
 
     # Leer la descripción del archivo JSON
+    duration_string = leer_duration_string(args.description_json)
+    lyrics = ''
+    if args.lyrics:
+        un_artista = artista.split(";", 1)[0]
+        buscar_por = f"{track} {un_artista}"
+        lyrics = fetch_synced_lyrics(buscar_por, duration_string)
     description = leer_descripcion_json(args.description_json)
 
     try:
         print(f"Intentando insertar metadatos...")
-        agregar_metadatos_mp3(mp3_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description)
+        agregar_metadatos_mp3(mp3_filename, args.cover_image, track, artista, album, artalb, ayo, numtrack, args.id, description, lyrics)
         
         # Renombrar el archivo final
         new_filename = f"{track} - {artista.replace(';', ', ')}.mp3"
@@ -228,6 +306,8 @@ def main():
         print(f'    Carátula....... :   {args.cover_image}')
         if description:
             print(f'    Descripción.....:   {description.splitlines()[0]}') # Solo la primera línea
+        if lyrics:
+            print(f'    Líricas.........:   {lyrics.splitlines()[0]}') # Solo la primera línea
         print(f"")
         
 
