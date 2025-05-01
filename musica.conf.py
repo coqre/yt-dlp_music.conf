@@ -40,12 +40,12 @@ if formato_de_cover not in ["webp", "png", "jpg"]:
 # --------------- INICIO DE LOS CAMBIOS dm.bat -------------------
 
 if liricas == "s":
-    liricas = ", --lyrics"
+    liricas = " --lyrics"
 elif liricas =="n":
     liricas = ""
 else:
     print(f'{liricas} no es un valor permitido. Cambiando a "s".')
-    liricas = ", --lyrics"
+    liricas = " --lyrics"
 
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
