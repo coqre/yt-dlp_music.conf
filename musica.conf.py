@@ -15,6 +15,7 @@ nombre_de_cover = "cover"
 formato_de_cover = "webp"   # Solo adminte webp (con cwebp), jpg (con jpegoptim), y png (con pngquant). Tome como referencia los .py "procesar_" para usar otros formatos. Agréguelo a Formatos permitidos.
 peso_maximo_de_cover = "1300"
 calidad_minina_de_cover = "80"
+liricas = "s"       # "s" = Sí, "n" = No.
 
 
 # ----------------------------------------------------------------------------------
@@ -37,6 +38,14 @@ if formato_de_cover not in ["webp", "png", "jpg"]:
     formato_de_cover = "webp"
 
 # --------------- INICIO DE LOS CAMBIOS dm.bat -------------------
+
+if liricas == "s":
+    liricas = ", --lyrics"
+elif liricas =="n":
+    liricas = ""
+else:
+    print(f'{liricas} no es un valor permitido. Cambiando a "s".')
+    liricas = ", --lyrics"
 
 nueva_linea_3 = f'set "ruta_descarga={ruta_de_descarga}"\n'
 nueva_linea_6 = f'set "subF_playlist={subcarpeta_playlist}"\n'
@@ -100,7 +109,7 @@ contenido_conf_single = f'''# Single
 --write-info-json
 --format "(bestvideo[ext=webm]/bestvideo)+(bestaudio[acodec^=opus]/bestaudio)/best"
 --exec 'procesar_{f_cover}.py {{}} "{n_cover}.{f_cover}" "{s_cover}" "{q_cover}"'
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" %(title)q %(artist)q %(album)q "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"{liricas}'
 --exec 'del {n_cover}.{f_cover} {temp}.info.json && echo'
 '''
 
@@ -132,7 +141,7 @@ contenido_conf_playlist = f'''# List-música
 -o "{temp}.%(ext)s"
 --write-info-json
 --format "(bestaudio[acodec^=opus]/bestaudio)"
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" %(title)q %(artist)q %(album)q "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"{liricas}'
 --exec 'del {temp}.info.json && echo'
 '''
 
@@ -148,7 +157,7 @@ contenido_conf_singlelist = f'''# Playlist de Singles
 -o "{temp}.%(ext)s"
 --format "(bestvideo[ext=webm]/bestvideo)+(bestaudio[acodec^=opus]/bestaudio)/best"
 --exec 'procesar_{f_cover}.py {{}} "{n_cover}.{f_cover}" "{s_cover}" "{q_cover}"'
---exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" "%(title)s" "%(artist)s" "%(album)s" "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"'
+--exec 'metadatos.py "{temp}.%(ext)s" "{n_cover}.{f_cover}" """%(id)s""" %(title)q %(artist)q %(album)q "" "%(playlist_index)s" "%(release_year)s" "{temp}.info.json"{liricas}'
 --exec 'del {n_cover}.{f_cover} {temp}.info.json && echo'
 '''
 
