@@ -34,7 +34,7 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
 - `PIL (Pillow)`: procesamiento de imágenes
 - `mutagen`: manipular metadatos de archivos de audio
 - `pymediainfo`: detectar códec de audio
-- `requests`: peticiones http (para líricas usando la API de [lrclib](lrclib.net))
+- `requests`: peticiones http (para líricas usando la API de [lrclib](https://lrclib.net/))
 
 ## Instalación
 1. Instalar [Python](https://www.python.org/downloads/).
