@@ -34,6 +34,7 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
 - `PIL (Pillow)`: procesamiento de imágenes
 - `mutagen`: manipular metadatos de archivos de audio
 - `pymediainfo`: detectar códec de audio
+- `requests`: peticiones http (para líricas usando la API de [lrclib](lrclib.net))
 
 ## Instalación
 1. Instalar [Python](https://www.python.org/downloads/).
@@ -45,13 +46,14 @@ Se pensó el «súper script» de esta manera modular para que se pueda personal
      pip install Pillow
      pip install mutagen
      pip install pymediainfo
+     pip install requests
      ```
 
 3. Instalar [yt-dlp](https://github.com/yt-dlp/yt-dlp), [ffmpeg](https://github.com/FFmpeg/FFmpeg), y [cwebp](https://developers.google.com/speed/webp/download?hl=es-419) / [pngquant](https://pngquant.org/) (dependencias).
    - La forma fácil de instalar yt-dlp es con python ejecutando el comando `pip install yt-dlp`. Sino, descargar desde su repositorio de GitHub.
    - Tanto ffmpeg, cwebp y pngquant se descargan desde sus sitios webs oficiales y se los [añade al PATH](https://www.softzone.es/windows/como-se-hace/cambiar-path-variables-entorno/). Si no están en PATH, es necesario que estén en la misma carpeta que «yt-dlp_musica.conf».
 
-   Nota: ‘cwebp’ manipula imágenes webp mientras ‘pngquant’ maneja png’s. Descargue según sus necesidades.
+   Nota: ‘cwebp’ manipula imágenes webp mientras ‘pngquant’ maneja png's, jpegoptim para imágenes ‘jpeg’. Descargue según sus necesidades.
 
 4. Instalar `yt-dlp_musica.conf`.
    - Descargue los archivos de este repositorio.
@@ -153,7 +155,7 @@ Este se ejecuta como configuración no playlist:
 - Establece el output `-o` definido por defecto por el archivo de configuración global (argumento `archivo_temporal`).
 - Establece descargar el mejor audio con codec opus y el mejor video con extensión webm. Pueden cambiarse, pero creería que el único argumento que puede romper todo el script sería algún códec no compatible con el contenedor ogg. Léase más abajo para más información. Para la mejor calidad es necesario pasar las cookies de una cuenta premium de YouTube.
 - Luego ejecuta el script de procesado de imagen (`procesar_*.py` según el formato seleccionado por `formato_de_cover`) pasando los argumentos del archivo descargado, el nombre de la imagen a exportar, el peso máximo y la calidad mínima; todos estos seteados por defecto por el archivo de configuración global (argumentos `nombre_de_cover` y `formato_de_cover` unidos `peso_máximo_de_cover` y `calidad_minima_de_cover`).
-- Ejecuta el script del procesado de metadatos (`metadatos.py`) pasando los argumentos de `archivo_temporal`, el nombre y formato de la carátula, el ID del enlace, los metadatos de título, artista, álbum, artista del álbum seteado como vacío porque no suele haber, el número de índice y el año de publicación.
+- Ejecuta el script del procesado de metadatos (`metadatos.py`) pasando los argumentos de `archivo_temporal`, el nombre y formato de la carátula, el ID del enlace, los metadatos de título, artista, álbum, artista del álbum seteado como vacío porque no suele haber, el número de índice y el año de publicación. Opcionalmente puede incrustar las líricas con `--lyrics`.
 - Por último, elimina la imagen / carátula que para este momento ya debió haberse procesado con el audio.
 
 ### precesar
@@ -171,7 +173,7 @@ Este se ejecuta como versión de la playlist para extraer la carátula del prime
 Si el archivo `precesar.conf` se ejecutó sin errores pasa a este archivo. Este se ejecuta como la segunda parte de la descarga de lista de reproducción y tiene como objetivo descargar solo los audios, ya no los videos como en `single.conf` porque en teoría ya debería haber carátula.
 - Establece el output `-o` definido por defecto por el archivo de configuración global (argumento `archivo_temporal`).
 - Establece descargar el mejor audio con codec opus. Pueden cambiarse, pero creería que el único argumento que puede romper todo el script sería algún códec no compatible con el contenedor ogg. Léase más abajo para más información. Para la mejor calidad es necesario pasar las cookies de una cuenta premium de YouTube.
-- Ejecuta el script del procesado de metadatos (`metadatos.py`) pasando los argumentos de `archivo_temporal`, el nombre y formato de la carátula, el ID del enlace, los metadatos de título, artista, álbum, artista del álbum seteado como vacío porque no suele haber, el número de índice y el año de publicación.
+- Ejecuta el script del procesado de metadatos (`metadatos.py`) pasando los argumentos de `archivo_temporal`, el nombre y formato de la carátula, el ID del enlace, los metadatos de título, artista, álbum, artista del álbum seteado como vacío porque no suele haber, el número de índice y el año de publicación  Opcionalmente puede incrustar las líricas con `--lyrics`.
 
 ## Scripts de metadatos
 
@@ -210,6 +212,7 @@ En fin, ahora lo que hace este script:
 - Los artistas suelen estar separados por comas, por lo que el metadato de artista elimina la coma espaciada y lo sustituye por el separador más conocido y más compatible: el punto y coma (;). Puedes cambiarlo.
 - Si el álbum está vacío, setea el álbum como el nombre del track.
 - Como no hay artista del álbum, setea el artista como artista del álbum y si hay más de uno, setea al artista del álbum como el primer artista ya que suele ser así.
+- Si está activado la incrustación de las líricas, el script llamará a la API de lrclib y pedirá al usuario elegir entre las opciones disponibles.
 - Si se te ocurre cómo mejorar esto o automatizar otros metadatos, eres bienvenido/a. :D
 
 Luego intenta escribir los metadatos (con carátula incluida) en el archivo ogg y también para m4a, y pone el ID del enlace de YouTube como comentario o ID según corresponda.
@@ -232,4 +235,5 @@ No hay.
 .
 .
 Ok no, aquí esta el [dm](https://files.catbox.moe/t0lmuq.sh) y aquí está el [dmp](https://files.catbox.moe/ig6sco.sh)
+Estos están muy, muy desactualizados, pero bueno, si quieres descargar no sé si aún funcione.
 Los subo en catbox.moe porque sólo quiero reservar esto para Windows. 🙃
